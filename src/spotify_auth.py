@@ -13,25 +13,38 @@ def get_spotify_client():
     """
     client_id = os.getenv("SPOTIFY_CLIENT_ID")
     client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
-    redirect_uri = "http://localhost:8888/callback"
-    
-    # Define the scopes (permissions) your app needs
-    scope = "user-library-read playlist-read-private playlist-modify-private playlist-modify-public"
-    
-    # Create the Spotify OAuth client
+    redirect_uri = "http://127.0.0.1:9090/callback"
+
+    scope = "user-library-read user-read-private user-top-read playlist-read-private playlist-modify-private playlist-modify-public"
+
     auth_manager = SpotifyOAuth(
         client_id=client_id,
         client_secret=client_secret,
         redirect_uri=redirect_uri,
-        scope=scope
+        scope=scope,
+        open_browser=False,
+        show_dialog=True,
+        cache_path=".cache"
     )
-    
-    # Create and return the Spotify client
+
     spotify = spotipy.Spotify(auth_manager=auth_manager)
+
+    # Print token for debug
+    try:
+        token_info = auth_manager.get_cached_token()
+        if token_info:
+            print("Access token acquired successfully.")
+        else:
+            print("No valid token found.")
+    except Exception as e:
+        print(f"Failed to acquire access token: {str(e)}")
+
     return spotify
 
 if __name__ == "__main__":
-    # Test the authentication
     spotify = get_spotify_client()
-    results = spotify.current_user()
-    print(f"Authenticated as: {results['display_name']}")
+    try:
+        results = spotify.current_user()
+        print(f"Authenticated as: {results['display_name']}")
+    except Exception as e:
+        print(f"Failed to fetch current user: {str(e)}")
